@@ -1,33 +1,68 @@
-var indexArray = [];
-var stringArray = [];
-var paragraphs = document.getElementsByTagName('p');
+
+// Constant Values
+const SENTENCE_MIN_CHAR_COUNT = 25;
+const JOY_FACTOR = 3;
+const FEAR_FACTOR = -1;
+const ANGER_FACTOR = -2;
+const SADNESS_FACTOR = -0.5;
+const SURPRISE_FACTOR = 0;
+
+
+// Global Arrays
+var pageParagraphCount = [];
+var pageSentenceCount = [];
+var pageSentences = [];
+var pageParagraphElements = document.getElementsByTagName('p');
+
+
 var i;
-for (i = 0; i < paragraphs.length; i++) {
-	if ((paragraphs[i].innerHTML !== null) && (paragraphs[i].innerHTML !== ''))
+for (i = 0; i < pageParagraphElements.length; i++) {
+	// Loop through all non empty paragraph elements on the page
+	if ((pageParagraphElements[i].innerHTML !== null)
+		&& (pageParagraphElements[i].innerHTML !== ''))
 	{
-		stringArray.push(strip_html_tags(paragraphs[i].innerHTML));
-		indexArray.push(i);
+		// Remove all HTML tags from paragraphs
+		var str = paragraphRemoveHtmlTags(pageParagraphElements[i].innerHTML);
+		
+		// Discard paragraphs with less than SENTENCE_MIN_CHAR_COUNT characters
+		if (str.length > SENTENCE_MIN_CHAR_COUNT)
+		{
+			// Split paragraph into sentences based on "."
+			var sentences = str.split(".");
+			
+			var goodSentenceCount = 0;
+
+			// Loop through all sentences in the paragraph
+			var j;
+			for (j = 0; j < sentences.length; j++)
+			{
+				if ((sentences[j] !== null)
+					&& (sentences[j] !== '')
+					&& (sentences[j].length > SENTENCE_MIN_CHAR_COUNT))
+				{
+					// Add sentence to the total page sentences if it is not empty,
+					// and has more than SENTENCE_MIN_CHAR_COUNT characters, then increment good count
+					pageSentences.push(sentences[j]);
+					goodSentenceCount++;
+				}
+
+			}
+
+			// Increment total page paragraph/sentence count if paragraph had any good sentences
+			if (goodSentenceCount > 0)
+			{
+				pageSentenceCount.push(goodSentenceCount);
+				pageParagraphCount.push(i);
+			}
+		}
 	}
 }
-queryBatchParagraphUpliftingFactor(stringArray);
 
-function queryBatchParagraphUpliftingFactor(sentence) {
-    var request = new XMLHttpRequest();
-	request.open("POST", "https://apiv2.indico.io/emotion/batch", true);
-	request.send(JSON.stringify({
-		'api_key': "cea890a94becdfba119aa7330b0e0250",
-		'data': sentence,
-		'threshold': 0.0
-	}));
+// Query the uplifting factors for the page sentences
+querySentencesUpliftingFactors(pageSentences);
 
-	request.onreadystatechange = function () {
-		if(request.readyState === 4 && request.status === 200) {
-			handleResponse(JSON.parse(request.response));
-		}
-	};
-}
 
-function strip_html_tags(str)
+function paragraphRemoveHtmlTags(str)
 {
 	if ((str === null) || (str === ''))
 		return false;
@@ -37,29 +72,58 @@ function strip_html_tags(str)
 	return str.replace(/<[^>]*>/g, '');
 }
 
-function handleResponse(jSonResponse)
+
+function querySentencesUpliftingFactors(sentencesArray) {
+    var request = new XMLHttpRequest();
+	request.open("POST", "https://apiv2.indico.io/emotion/batch", true);
+	request.send(JSON.stringify({
+		'api_key': "cea890a94becdfba119aa7330b0e0250",
+		'data': sentencesArray,
+		'threshold': 0.0
+	}));
+
+	request.onreadystatechange = function () {
+		if(request.readyState === 4 && request.status === 200) {
+			handleUpliftingServerResponse(JSON.parse(request.response));
+		}
+	};
+}
+
+function handleUpliftingServerResponse(jSonResponse)
 {
-	console.log("Got JSON Response, Updating Page");
-	console.log(jSonResponse);
-	var multiArray = [];
+	console.log("Got JSON Uplifting Response");
+
+	// Loop through and calculate single value uplifting factor
+	var upliftingFactorsArray = [];
 	var i;
-	for (i = 0; i < indexArray.length; i++)
+	for (i = 0; i < pageSentences.length; i++)
 	{
-		multiArray.push([getValue(jSonResponse.results[i].anger,
+		upliftingFactorsArray.push([calculateUpliftingSingleFactor(jSonResponse.results[i].anger,
 								  jSonResponse.results[i].fear,
 								  jSonResponse.results[i].joy,
 								  jSonResponse.results[i].sadness,
-								  jSonResponse.results[i].surprise), indexArray[i]]);
+								  jSonResponse.results[i].surprise), i]);
 	}
-	sortByCol(multiArray, 0);
-	
-	for (i = 0; i < indexArray.length; i++)
+	// Sort uplifting factors array
+	sortUpliftingFactorsMultiArray(upliftingFactorsArray, 0);
+
+	console.log("Updating Page");
+
+	// Update the page paragraphs and sentences based on the uplifting factors calculated
+	var j;
+	var k = 0;
+	for (i = 0; i < pageParagraphCount.length; i++)
 	{
-		paragraphs[indexArray[i]].innerHTML = stringArray[multiArray[i][1]].toString();
+		pageParagraphElements[i].innerHTML = "";
+		for (j = 0; j < pageSentenceCount[i]; j++)
+		{
+			pageParagraphElements[i].innerHTML = pageParagraphElements[i].innerHTML + pageSentences[upliftingFactorsArray[j + k][1]].toString();
+			k++;
+		}
 	}
 }
 
-function sortByCol(arr, colIndex){
+function sortUpliftingFactorsMultiArray(arr, colIndex){
     arr.sort(sortFunction)
     function sortFunction(a, b) {
         a = a[colIndex]
@@ -68,12 +132,12 @@ function sortByCol(arr, colIndex){
     }
 }
 
-function getValue(anger, fear, joy, sadness, surprise)
+function calculateUpliftingSingleFactor(anger, fear, joy, sadness, surprise)
 {
-	return ((joy * 3)
-			- (fear * 1)
-			- (anger * 2)
-			- (sadness * 0.5)
-			+ (surprise * 0))
+	return ((joy * JOY_FACTOR)
+			+ (fear * FEAR_FACTOR)
+			+ (anger * ANGER_FACTOR)
+			+ (sadness * SADNESS_FACTOR)
+			+ (surprise * SURPRISE_FACTOR))
 }
 	
