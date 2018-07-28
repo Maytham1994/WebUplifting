@@ -4,24 +4,15 @@
 
 'use strict';
 			
-let changeColor = document.getElementById('changeColor');
-chrome.storage.sync.get('color', function(data) {
-  changeColor.style.backgroundColor = data.color;
-  changeColor.setAttribute('value', data.color);
-});
-changeColor.onclick = function(element) {
-    let color = element.target.value;
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+let upliftMe = document.getElementById('upliftMe');
+upliftMe.style.background="url('images/upliftMe32.png')";   
+upliftMe.onclick = function(element) {
+	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 		chrome.tabs.executeScript(
 			tabs[0].id,
-			{code: 'document.body.style.backgroundColor = "' + color + '";'});  
-    });
-	
-/* 	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-		chrome.tabs.executeScript(
-			tabs[0].id,
-			{file : '/jsonPost.js'});  
-		}); */
+			{file : '/jsonPost.js'}
+		);
+	});
 		
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 			chrome.tabs.executeScript(
