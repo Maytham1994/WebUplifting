@@ -1,8 +1,8 @@
 
 // This should get all paragraphs on the page
-document.getElementsByTagName("p").forEach(
-    elem => {
-        // Will need to further divide by sentence
-        console.log(elem.innerHtml);
-    }
-);
+var paragraphs = document.getElementsByTagName('p');
+var i;
+for (i = 0; i < paragraphs.length; i++) {
+    // Now split by sentences
+    console.log(paragraphs[i].innerHTML);
+}
