@@ -17,19 +17,19 @@ upliftMe.onclick = function(element) {
 			{code: 'document.body.style.backgroundSize = "500px 533px";'}
 		);
     });
-
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-		chrome.tabs.executeScript(
-			tabs[0].id,
-			{file : '/jsonPost.js'}
-		);
-	});
 		
 	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 		chrome.tabs.executeScript(
 			tabs[0].id,
-			{code: '/parsePage.js'}
+			{file: '/parsePage.js'}
 		);
 	});
 
-;
+/* 	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+		chrome.tabs.executeScript(
+			tabs[0].id,
+			{file : '/jsonPost.js'}
+		);
+	}); */
+	
+};
