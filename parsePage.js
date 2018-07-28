@@ -1,10 +1,10 @@
 
 // Constant Values
 var SENTENCE_MIN_CHAR_COUNT = 25;
-var JOY_FACTOR = 3;
-var FEAR_FACTOR = -1;
-var ANGER_FACTOR = -2;
-var SADNESS_FACTOR = -0.5;
+var JOY_FACTOR = 5;
+var FEAR_FACTOR = -2;
+var ANGER_FACTOR = -3;
+var SADNESS_FACTOR = -0.8;
 var SURPRISE_FACTOR = 0;
 var regex = /\d+:\s/g;
 
@@ -13,7 +13,7 @@ var regex = /\d+:\s/g;
 var pageParagraphCount = [];
 var pageSentenceCount = [];
 var pageSentences = [];
-var pageParagraphElements = document.getElementsByTagName('p');
+var pageParagraphElements = document.querySelectorAll('p,li');
 
 
 var i;
@@ -47,7 +47,7 @@ for (i = 0; i < pageParagraphElements.length; i++) {
 				{
 					// Add sentence to the total page sentences if it is not empty,
 					// and has more than SENTENCE_MIN_CHAR_COUNT characters, then increment good count
-					pageSentences.push(sentences[j]);
+					pageSentences.push(sentences[j]+". ");
 					goodSentenceCount++;
 				}
 
