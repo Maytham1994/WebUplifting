@@ -1,12 +1,18 @@
 {
-  "name": "ChromeExtensionExample",
+  "name": "WebUplifting",
   "version": "1.0",
-  "description": "Build an Extension!",
+  "description": "Make ur life more uplifting!",
   "permissions": ["activeTab", "declarativeContent", "storage"],
   "background": {
       "scripts": ["background.js"],
       "persistent": false
     },
+    "content_scripts": [
+      {
+        "matches": ["*://*/*"],
+        "js": ["load.js"]
+      }
+    ],
 	"page_action": {
       "default_popup": "popup.html",
 	  "default_icon": {
