@@ -1,11 +1,12 @@
 
 // Constant Values
-const SENTENCE_MIN_CHAR_COUNT = 25;
-const JOY_FACTOR = 3;
-const FEAR_FACTOR = -1;
-const ANGER_FACTOR = -2;
-const SADNESS_FACTOR = -0.5;
-const SURPRISE_FACTOR = 0;
+var SENTENCE_MIN_CHAR_COUNT = 25;
+var JOY_FACTOR = 3;
+var FEAR_FACTOR = -1;
+var ANGER_FACTOR = -2;
+var SADNESS_FACTOR = -0.5;
+var SURPRISE_FACTOR = 0;
+var regex = /\d+:\s/g;
 
 
 // Global Arrays
@@ -24,8 +25,11 @@ for (i = 0; i < pageParagraphElements.length; i++) {
 		// Remove all HTML tags from paragraphs
 		var str = paragraphRemoveHtmlTags(pageParagraphElements[i].innerHTML);
 		
+		// THIS IS NEEDED FOR SOME REASON
+		regex.test(" ");
 		// Discard paragraphs with less than SENTENCE_MIN_CHAR_COUNT characters
-		if (str.length > SENTENCE_MIN_CHAR_COUNT)
+		if ((str.length > SENTENCE_MIN_CHAR_COUNT)
+			&& (regex.test(str) == false))
 		{
 			// Split paragraph into sentences based on "."
 			var sentences = str.split(".");
@@ -38,7 +42,8 @@ for (i = 0; i < pageParagraphElements.length; i++) {
 			{
 				if ((sentences[j] !== null)
 					&& (sentences[j] !== '')
-					&& (sentences[j].length > SENTENCE_MIN_CHAR_COUNT))
+					&& (sentences[j].length > SENTENCE_MIN_CHAR_COUNT)
+					&& (sentences[j].indexOf("Last Accessed:") == -1))
 				{
 					// Add sentence to the total page sentences if it is not empty,
 					// and has more than SENTENCE_MIN_CHAR_COUNT characters, then increment good count
@@ -106,8 +111,8 @@ function handleUpliftingServerResponse(jSonResponse)
 	}
 	// Sort uplifting factors array
 	sortUpliftingFactorsMultiArray(upliftingFactorsArray, 0);
-
-	console.log("Updating Page");
+	
+	console.log("Updating Page With Uplifted Sentences");
 
 	// Update the page paragraphs and sentences based on the uplifting factors calculated
 	var j;
@@ -140,4 +145,3 @@ function calculateUpliftingSingleFactor(anger, fear, joy, sadness, surprise)
 			+ (sadness * SADNESS_FACTOR)
 			+ (surprise * SURPRISE_FACTOR))
 }
-	
